@@ -1,4 +1,8 @@
 node_modules/
+.venv-tts/
+tts_models/
+content/voice_samples/
+content/review.html
 .env
 .env.*
 .vercel/
