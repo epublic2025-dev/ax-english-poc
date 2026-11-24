@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>단어정원 ERD</title>
+<style>
+  body { margin: 0; padding: 16px; background: #F1F5EC; color: #1E3328; font-family: 'IBM Plex Sans KR', system-ui, sans-serif; }
+  h1 { margin: 0 0 4px; font-size: 22px; }
+  p { margin: 0 0 16px; font-size: 14px; color: #56675B; }
+  .wrap { background: #FBFCF8; border-radius: 16px; padding: 12px; overflow: auto; box-shadow: 0 2px 0 #D3DFCC; margin-bottom: 20px; }
+  .err { color: #B9502C; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<h1>단어정원 ERD</h1>
+<p>원본: 2-1_ERD.md 의 mermaid 그림을 그대로 그립니다. 그림을 고칠 때는 md 파일만 고치면 됩니다.</p>
+<div id="out"></div>
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.esm.min.mjs';
+mermaid.initialize({ startOnLoad: false, theme: 'base', securityLevel: 'strict',
+  themeVariables: { primaryColor: '#E1EDE2', primaryBorderColor: '#2F6B47', lineColor: '#56675B', fontFamily: 'IBM Plex Sans KR, sans-serif' },
+  er: { useMaxWidth: false } });
+const out = document.getElementById('out');
+try {
+  const md = await (await fetch('../2-1_ERD.md')).text();
+  const blocks = [...md.matchAll(/```mermaid\n([\s\S]*?)```/g)].map((m) => m[1]);
+  for (let i = 0; i < blocks.length; i++) {
+    const { svg } = await mermaid.render(`g${i}`, blocks[i]);
+    const div = document.createElement('div'); div.className = 'wrap'; div.innerHTML = svg; out.appendChild(div);
+  }
+} catch (e) {
+  out.innerHTML = `<p class="err">그림을 그리지 못했어요: ${String(e.message || e).replace(/</g, '&lt;')}</p>`;
+}
+</script>
+</body>
+</html>
