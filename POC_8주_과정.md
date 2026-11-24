@@ -85,5 +85,5 @@
 | 2 설계 | 완료 | [`2_설계.md`](2_설계.md), [`2-1_ERD.md`](2-1_ERD.md), 목업 [`mockups/design.html`](mockups/design.html) |
 | 3 구현 ① DB | 완료 | [`3-1_DB_구현.md`](3-1_DB_구현.md), `supabase/` |
 | 3 구현 ② 웹앱 | 완료 · 배포 | [`3-2_웹앱_구현.md`](3-2_웹앱_구현.md), `app/`, https://word-garden-pink.vercel.app |
-| 4 테스트 · 검수 | 대기 | 검수 체크리스트 |
-| 마무리 · Vercel 배포 | 대기 | 배포 링크 |
+| 4 테스트 · 검수 | 자동 검수 완료 · 실사용 대기 | [`4_테스트_검수.md`](4_테스트_검수.md) |
+| 마무리 · Vercel 배포 | 완료 | https://word-garden-pink.vercel.app |

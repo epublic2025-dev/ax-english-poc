@@ -9,11 +9,33 @@
     <meta name="description" content="매일 조금씩, 영어 단어가 자라는 정원" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet" />
+    <!-- 글꼴은 화면 그리기를 막지 않게 늦게 붙인다 (그동안은 기본 글꼴로 먼저 보여 줌) -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" /></noscript>
     <title>단어정원</title>
+    <style>
+      /* 앱 코드가 오기 전에 HTML 만으로 바로 보이는 첫 화면 (React 가 준비되면 이 자리를 이어받음) */
+      body { margin: 0; background: #F1F5EC; }
+      .shell { min-height: 100dvh; display: grid; place-content: center; justify-items: center; gap: 14px; text-align: center;
+        background: linear-gradient(180deg, #F6F8EF 0%, #F1F5EC 45%, #E8F0E1 100%); color: #234F35;
+        font-family: 'Gowun Dodum', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; }
+      .shell h1 { margin: 0; font-size: 48px; font-weight: 400; letter-spacing: -0.02em; }
+      .shell p { margin: 0; font-size: 16px; color: #56675B; }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="shell" aria-hidden="true">
+        <svg viewBox="0 0 60 66" width="96" height="106">
+          <path d="M30 18 C22 4 9 5 7 14 C17 13 24 15 30 21 Z" fill="#6FBF5B" /><path d="M30 18 C38 4 51 5 53 14 C43 13 36 15 30 21 Z" fill="#4FA34A" />
+          <ellipse cx="30" cy="43" rx="23" ry="21" fill="#B5E29A" stroke="#6FA85C" stroke-width="1.6" />
+          <circle cx="22" cy="41" r="3.2" fill="#1E3328" /><circle cx="38" cy="41" r="3.2" fill="#1E3328" />
+          <path d="M24 50 Q30 55 36 50" stroke="#1E3328" stroke-width="2.4" fill="none" stroke-linecap="round" />
+        </svg>
+        <h1>단어정원</h1>
+        <p>매일 조금씩, 영어 단어가 자라는 정원</p>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

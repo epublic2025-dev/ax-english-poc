@@ -10,6 +10,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      injectRegister: 'script-defer', // 서비스 워커 등록이 첫 화면을 막지 않게
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
         name: '단어정원',

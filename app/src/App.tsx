@@ -1,24 +1,26 @@
-import type { ReactNode } from 'react'
+import { lazy, Suspense, type ReactNode } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './lib/auth'
-import CourseSelect from './screens/CourseSelect'
 import Home from './screens/Home'
 import Login from './screens/Login'
-import AdminItems from './screens/admin/AdminItems'
-import AdminReports from './screens/admin/AdminReports'
-import AdminStats from './screens/admin/AdminStats'
-import Certificate from './screens/Certificate'
-import Exam from './screens/Exam'
-import Lesson from './screens/Lesson'
-import My from './screens/My'
-import Review from './screens/Review'
-import WrongNote from './screens/WrongNote'
-import Placement from './screens/Placement'
-import Reset from './screens/Reset'
 import Signup from './screens/Signup'
 import Start from './screens/Start'
 import Verify from './screens/Verify'
 import { Splash } from './ui'
+
+// 첫 화면에 필요 없는 화면은 들어갈 때 받는다 (휴대폰 첫 화면 속도 — 성공 기준 S6)
+const CourseSelect = lazy(() => import('./screens/CourseSelect'))
+const Placement = lazy(() => import('./screens/Placement'))
+const Reset = lazy(() => import('./screens/Reset'))
+const Lesson = lazy(() => import('./screens/Lesson'))
+const Review = lazy(() => import('./screens/Review'))
+const WrongNote = lazy(() => import('./screens/WrongNote'))
+const Exam = lazy(() => import('./screens/Exam'))
+const My = lazy(() => import('./screens/My'))
+const Certificate = lazy(() => import('./screens/Certificate'))
+const AdminStats = lazy(() => import('./screens/admin/AdminStats'))
+const AdminItems = lazy(() => import('./screens/admin/AdminItems'))
+const AdminReports = lazy(() => import('./screens/admin/AdminReports'))
 
 // 로그인한 사람만. 코스를 아직 안 골랐으면 코스 고르기로.
 function RequireAuth({ children }: { children: ReactNode }) {
@@ -42,6 +44,7 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <Suspense fallback={<Splash />}>
         <Routes>
           <Route path="/" element={<GuestOnly><Start /></GuestOnly>} />
           <Route path="/signup" element={<GuestOnly><Signup /></GuestOnly>} />
@@ -62,6 +65,7 @@ export default function App() {
           <Route path="/admin/reports" element={<RequireAuth><AdminReports /></RequireAuth>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </Suspense>
       </BrowserRouter>
     </AuthProvider>
   )
