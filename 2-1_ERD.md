@@ -194,6 +194,9 @@ erDiagram
 | 단어 삭제 | 하지 않음 — `items.hidden = true` (학습 기록 보호) |
 | 음성 주소 | `VITE_AUDIO_BASE` + `audio_word` + `?v=` + `audio_version` |
 | 사용자 삭제 | `auth_users` 를 지우면 그 사람의 ②③④ 기록도 함께 지워짐 (on delete cascade) |
+| 레슨 뒤 정원 | 다 맞힌 단어는 `stage` 2(잎, 3일 뒤), 틀린 단어는 1(새싹, 1일 뒤) — 이미 더 자란 단어는 그대로 |
+| 관리자 확인 | `private.is_admin()` (앱 API에 드러나지 않는 스키마) |
+| 실제 DB | 2026-11-24 `word-garden` 프로젝트에 적용 · 검사 완료 → [3-1_DB_구현.md](3-1_DB_구현.md) |
 | 자주 찾는 칸 색인 | `item_memory(user_id, due_at)` 복습함 · `attempts(item_id)` 자주 틀리는 단어 · `attempts(user_id, created_at)` 주간 리포트 · `xp_events(user_id, created_at)` 하루 목표 |
 
 ## 4. 오늘 할 일이 만들어지는 흐름
