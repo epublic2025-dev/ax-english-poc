@@ -36,6 +36,13 @@ export default function Lesson() {
     itemsForCourse(course).then(setItems).catch((e) => setError(authMessage(e)))
   }, [course])
 
+  // 다른 레슨으로 바로 넘어가면 결과 화면을 지우고 새로 시작
+  useEffect(() => {
+    setResult(null)
+    setError('')
+    setRound((n) => n + 1)
+  }, [id])
+
   const questions = useMemo(() => {
     if (!items) return []
     const lessonItems = items.filter((it) => lessonOf(it.id) === id)
@@ -60,7 +67,7 @@ export default function Lesson() {
     )
   }
   if (questions.length === 0) return <Page><Notice>이 레슨에 단어가 없어요.</Notice></Page>
-  return <Runner key={round} questions={questions} mode="lesson" onDone={finish} onExit={() => nav('/home')} />
+  return <Runner key={round} questions={questions} mode="lesson" junior={course === 'E'} onDone={finish} onExit={() => nav('/home')} />
 }
 
 function ResultView({ r, items, onAgain, onHome }: { r: LessonResult; items: Item[]; course: Course; onAgain: () => void; onHome: () => void }) {

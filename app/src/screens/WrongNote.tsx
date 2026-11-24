@@ -25,7 +25,7 @@ export default function WrongNote() {
     ;(async () => {
       const [items, mem] = await Promise.all([
         itemsForCourse(course),
-        supabase.from('item_memory').select('item_id, stage, wrong_count').eq('ever_wrong', true).like('item_id', `${course}-%`),
+        supabase.from('item_memory').select('item_id, stage, wrong_count').eq('user_id', profile!.id).eq('ever_wrong', true).like('item_id', `${course}-%`),
       ])
       if (mem.error) throw mem.error
       const byId = new Map(items.map((it) => [it.id, it]))

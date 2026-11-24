@@ -4,6 +4,10 @@ import { AuthProvider, useAuth } from './lib/auth'
 import CourseSelect from './screens/CourseSelect'
 import Home from './screens/Home'
 import Login from './screens/Login'
+import AdminItems from './screens/admin/AdminItems'
+import AdminReports from './screens/admin/AdminReports'
+import AdminStats from './screens/admin/AdminStats'
+import Certificate from './screens/Certificate'
 import Exam from './screens/Exam'
 import Lesson from './screens/Lesson'
 import My from './screens/My'
@@ -52,6 +56,10 @@ export default function App() {
           <Route path="/wrong" element={<RequireAuth><WrongNote /></RequireAuth>} />
           <Route path="/exam/:levelId" element={<RequireAuth><Exam /></RequireAuth>} />
           <Route path="/me" element={<RequireAuth><My /></RequireAuth>} />
+          <Route path="/certificate/:course" element={<RequireAuth><Certificate /></RequireAuth>} />
+          <Route path="/admin" element={<RequireAuth><AdminStats /></RequireAuth>} />
+          <Route path="/admin/items" element={<RequireAuth><AdminItems /></RequireAuth>} />
+          <Route path="/admin/reports" element={<RequireAuth><AdminReports /></RequireAuth>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

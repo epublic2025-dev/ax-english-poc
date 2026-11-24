@@ -68,6 +68,20 @@ button { cursor: pointer; }
 .petal { position: fixed; top: -14px; z-index: 50; width: 12px; height: 12px; border-radius: 60% 0 60% 0; pointer-events: none; animation: wg-fall linear forwards; }
 .toast { animation: wg-toast 3.6s ease forwards; }
 
+/* ── 주니어 ── */
+@keyframes wg-hop { 0%, 100% { transform: translateY(0) } 40% { transform: translateY(-16px) rotate(-6deg) } 70% { transform: translateY(0) rotate(4deg) } }
+@keyframes wg-droop { 0%, 100% { transform: rotate(0) } 30% { transform: rotate(-10deg) translateY(3px) } 60% { transform: rotate(6deg) } }
+@keyframes wg-rain { to { transform: translateY(110vh) } }
+@keyframes wg-drift { 0% { transform: translate(0, 0) } 25% { transform: translate(var(--ax), var(--ay)) } 50% { transform: translate(var(--bx), var(--by)) } 75% { transform: translate(var(--cx), var(--cy)) } 100% { transform: translate(0, 0) } }
+@keyframes wg-flap { to { transform: scaleX(.5) } }
+.buddy-hop { display: inline-block; transform-origin: 50% 100%; animation: wg-hop .55s ease; }
+.buddy-droop { display: inline-block; transform-origin: 50% 100%; animation: wg-droop .6s ease; }
+.rain-drop { position: absolute; top: -20px; width: 3px; height: 16px; border-radius: 2px; background: rgb(79 163 224 / .75); animation: wg-rain linear forwards; }
+.bfly { animation: wg-drift linear infinite; }
+.bfly-stop { animation-play-state: paused; }
+.bfly .wing { animation: wg-flap .22s ease-in-out infinite alternate; }
+.bfly .wing-stop { animation: none; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }

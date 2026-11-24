@@ -40,6 +40,12 @@ export default defineConfig({
             },
           },
           {
+            // 주니어 그림 (Twemoji): 버전이 고정된 주소라 오래 보관
+            urlPattern: ({ url }) => url.origin === 'https://cdn.jsdelivr.net' && url.pathname.includes('/twemoji@'),
+            handler: 'CacheFirst',
+            options: { cacheName: 'twemoji', expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 365 }, cacheableResponse: { statuses: [0, 200] } },
+          },
+          {
             urlPattern: ({ url }) => url.origin === 'https://fonts.googleapis.com' || url.origin === 'https://fonts.gstatic.com',
             handler: 'StaleWhileRevalidate',
             options: { cacheName: 'fonts', expiration: { maxEntries: 30 } },

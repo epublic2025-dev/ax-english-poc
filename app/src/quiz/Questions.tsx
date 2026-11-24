@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import type { Item } from '../lib/data'
 import type { Question, Result } from '../lib/quiz'
 import { sfx } from '../sound/sfx'
 import { canListen, listenOnce, markSpeechBlocked, sayItem, speechErrorMessage } from '../sound/voice'
@@ -10,6 +11,7 @@ export type QProps = {
   answered: Answered
   reveal: boolean // 답을 낸 뒤 정답 표시 (레벨 테스트 · 시험은 안 보여 줌)
   onAnswer: (value: string, el: HTMLElement | null, forced?: Result) => void
+  onMany?: (recs: { item: Item; value: string }[], el: HTMLElement | null) => void // 짝 맞추기: 한 번에 여러 단어
 }
 
 export function Hint({ children }: { children: ReactNode }) {

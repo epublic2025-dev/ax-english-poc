@@ -23,12 +23,13 @@ export default function My() {
   useEffect(() => {
     if (!session) return
     const since = new Date(Date.now() - 7 * 86400000).toISOString()
+    const me = session.user.id // 관리자도 내 기록만 보이게
     Promise.all([
       supabase.from('badges').select('code, name, description, sort').order('sort'),
-      supabase.from('user_badges').select('badge_code'),
-      supabase.from('xp_events').select('amount').gte('created_at', since),
-      supabase.from('attempts').select('result').gte('created_at', since),
-      supabase.from('item_memory').select('stage').gte('stage', 3),
+      supabase.from('user_badges').select('badge_code').eq('user_id', me),
+      supabase.from('xp_events').select('amount').eq('user_id', me).gte('created_at', since),
+      supabase.from('attempts').select('result').eq('user_id', me).gte('created_at', since),
+      supabase.from('item_memory').select('stage').eq('user_id', me).gte('stage', 3),
     ]).then(([b, ub, xp, at, mem]) => {
       const got = new Set(((ub.data ?? []) as { badge_code: string }[]).map((x) => x.badge_code))
       setBadges(((b.data ?? []) as Omit<Badge, 'earned'>[]).map((x) => ({ ...x, earned: got.has(x.code) })))
@@ -55,7 +56,7 @@ export default function My() {
   async function changeCourse(c: Course) {
     if (!profile || c === profile.current_course) return
     await save({ current_course: c }, '코스를 바꿨어요')
-    const { data } = await supabase.from('course_progress').select('placement_done').eq('course_code', c).maybeSingle()
+    const { data } = await supabase.from('course_progress').select('placement_done').eq('user_id', profile.id).eq('course_code', c).maybeSingle()
     nav(data?.placement_done ? '/home' : '/placement')
   }
 
@@ -136,6 +137,9 @@ export default function My() {
         {profile.is_admin && <Button variant="soft" onClick={() => nav('/admin')}>관리자 화면</Button>}
         <Button variant="plain" onClick={signOut}>로그아웃</Button>
       </div>
+      <p className="m-0 text-center text-[11.5px] leading-relaxed text-ink2">
+        그림: Twemoji (CC BY 4.0, © Twitter · jdecked) · 발음: Kokoro (Apache-2.0)
+      </p>
       <TabBar />
     </Page>
   )

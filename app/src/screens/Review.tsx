@@ -43,8 +43,9 @@ export default function Review() {
 
   function start() {
     if (!due) return
-    // 카드 복습 위주, 세 개마다 하나는 문제로 확인
-    setQuestions(shuffle(due).map((it, i) => makeQuestion(i % 3 === 2 ? (i % 2 ? 'listen' : 'meaning') : 'card', it, pool)))
+    // 카드 복습 위주, 세 개마다 하나는 문제로 확인 (초등은 그림이 있으면 그림 듣고 고르기)
+    const check = (it: Item, i: number) => (course === 'E' && it.emoji ? 'pic' : i % 2 ? 'listen' : 'meaning')
+    setQuestions(shuffle(due).map((it, i) => makeQuestion(i % 3 === 2 ? check(it, i) : 'card', it, pool)))
   }
 
   async function finish(answers: AnswerRec[]) {
@@ -57,7 +58,7 @@ export default function Review() {
 
   if (error) return <Page><Notice>{error}</Notice><TabBar /></Page>
   if (!due) return <Splash />
-  if (questions) return <Runner questions={questions} mode="review" onDone={finish} onExit={() => setQuestions(null)} />
+  if (questions) return <Runner questions={questions} mode="review" junior={course === 'E'} onDone={finish} onExit={() => setQuestions(null)} />
 
   if (result) {
     return (

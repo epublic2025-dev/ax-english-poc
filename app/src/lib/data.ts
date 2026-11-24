@@ -66,10 +66,11 @@ export async function homeData(userId: string, course: Course): Promise<HomeData
   const [cp, lp, mem, xp, st, rq] = await Promise.all([
     supabase.from('course_progress').select('start_level, current_level, placement_done, completed_at')
       .eq('user_id', userId).eq('course_code', course).maybeSingle(),
-    supabase.from('lesson_progress').select('lesson_id, passed_at').like('lesson_id', `${course}-%`),
-    supabase.from('item_memory').select('stage').like('item_id', `${course}-%`),
-    supabase.from('xp_events').select('amount').gte('created_at', kstMidnightISO()),
-    supabase.from('streaks').select('current, best, last_active_date').maybeSingle(),
+    // 관리자는 권한상 모든 사람의 기록을 읽을 수 있으므로, 내 기록은 늘 user_id 로 좁힌다
+    supabase.from('lesson_progress').select('lesson_id, passed_at').eq('user_id', userId).like('lesson_id', `${course}-%`),
+    supabase.from('item_memory').select('stage').eq('user_id', userId).like('item_id', `${course}-%`),
+    supabase.from('xp_events').select('amount').eq('user_id', userId).gte('created_at', kstMidnightISO()),
+    supabase.from('streaks').select('current, best, last_active_date').eq('user_id', userId).maybeSingle(),
     supabase.rpc('get_review_queue', { p_course: course, p_limit: 100 }),
   ])
   for (const r of [cp, lp, mem, xp, st, rq]) if (r.error) throw r.error

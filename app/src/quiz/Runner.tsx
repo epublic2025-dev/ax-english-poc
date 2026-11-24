@@ -5,23 +5,35 @@ import { supabase } from '../lib/supabase'
 import { sfx } from '../sound/sfx'
 import { sayItem } from '../sound/voice'
 import { BlankQ, BuildQ, CardQ, ListenQ, MeaningQ, SpeakBtn, SpeakQ, WriteQ, type Answered, type QProps } from './Questions'
+import { ButterflyQ, MatchQ, PicQ, SeedQ } from './Junior'
+import { Buddy } from '../garden/Buddy'
+import type { Item } from '../lib/data'
 
 type Mode = 'lesson' | 'review' | 'placement' | 'exam'
-type Fx = { id: number; kind: 'leaf' | 'xp'; x: number; y: number; ch?: string; dx?: number; dy?: number; rot?: number }
+type Fx = { id: number; kind: 'leaf' | 'xp' | 'rain'; x: number; y: number; ch?: string; dx?: number; dy?: number; rot?: number; xp?: number }
 let fxSeq = 0
 
 const VIEW: Partial<Record<Question['type'], (p: QProps) => React.JSX.Element>> = {
   meaning: MeaningQ, listen: ListenQ, blank: BlankQ, build: BuildQ, write: WriteQ, speak: SpeakQ, card: CardQ,
+  pic: PicQ, butterfly: ButterflyQ, seed: SeedQ, match: MatchQ,
 }
 
+// 주니어(초등): 새싹이 말 · 자라는 화분 (2_설계.md 6-1)
+const GOOD_MSG = ['와, 맞았어!', '최고야! 쑥쑥 자란다!', '정말 잘했어!', '척척박사네!']
+const BAD_MSG = ['괜찮아, 다시 해 보자!', '아깝다! 정답 소리를 들어 봐', '틀려도 괜찮아, 기억하면 돼!']
+const PLANT = ['🌰', '🌱', '🌿', '🪴', '🌷']
+let msgTurn = 0
+
 // 문제를 차례로 내고, 효과 · 소리 · 결과 안내를 보여 준 뒤 답 묶음을 돌려준다
-export function Runner({ questions, mode, onDone, onExit, allowDontKnow = false }: {
+export function Runner({ questions, mode, onDone, onExit, allowDontKnow = false, junior = false }: {
   questions: Question[]
   mode: Mode
   onDone: (answers: AnswerRec[]) => void
   onExit: () => void
   allowDontKnow?: boolean
+  junior?: boolean
 }) {
+  const [say, setSay] = useState<{ text: string; mood: 'happy' | 'sad' | '' }>({ text: '하나씩 천천히 해 보자!', mood: '' })
   const [i, setI] = useState(0)
   const [answers, setAnswers] = useState<AnswerRec[]>([])
   const [answered, setAnswered] = useState<Answered>(null)
@@ -52,6 +64,39 @@ export function Runner({ questions, mode, onDone, onExit, allowDontKnow = false 
     else setI(i + 1)
   }
 
+  // 맞았을 때 연속 정답 · 주니어 물방울(5개마다 비 + 보너스)
+  function goodStreak(by = 1) {
+    const before = streak
+    const s = streak + by
+    setStreak(s)
+    if (junior) {
+      if (Math.floor(s / 5) > Math.floor(before / 5)) {
+        addFx([{ kind: 'rain', x: 0, y: 0 }], 1900)
+        setSay({ text: '물방울 5개! 비가 내려요 🌧 보너스 +20 XP', mood: 'happy' })
+      } else {
+        setSay({ text: GOOD_MSG[msgTurn++ % GOOD_MSG.length], mood: 'happy' })
+      }
+    }
+    return s
+  }
+  function badStreak() {
+    setStreak(0)
+    if (junior) setSay({ text: BAD_MSG[msgTurn++ % BAD_MSG.length], mood: 'sad' })
+  }
+
+  // 짝 맞추기: 한 문제에서 단어 여러 개를 기록
+  function onMany(recs: { item: Item; value: string }[], el: HTMLElement | null) {
+    if (answered) return
+    const add: AnswerRec[] = recs.map((r) => ({ item_id: r.item.id, qtype: 'match', answer: r.value }))
+    const list = [...answers, ...add]
+    setAnswers(list)
+    const okCount = recs.filter((r) => r.value === r.item.id).length
+    setAnswered({ value: '', ok: okCount === recs.length, result: okCount === recs.length ? 'correct' : 'wrong' })
+    if (okCount > 0) { goodStreak(okCount); celebrate(el) } else badStreak()
+    if (junior && okCount === recs.length) setSay({ text: '모두 짝을 찾았어! 꽃이 활짝 🌷', mood: 'happy' })
+    setTimeout(() => next(list), 900)
+  }
+
   function onAnswer(value: string, el: HTMLElement | null, forced?: Result) {
     if (answered) return
     const result: Result = forced ?? (grade(q, value) ? 'correct' : 'wrong')
@@ -63,7 +108,8 @@ export function Runner({ questions, mode, onDone, onExit, allowDontKnow = false 
     if (q.type === 'card') {
       // 카드는 스스로 채점: 안내창 없이 옆으로 넘김
       setAnswered({ value, ok: result === 'correct', result })
-      if (result === 'correct') { const s = streak + 1; setStreak(s); sfx.good(s) } else { setStreak(0); sfx.bad() }
+      if (result === 'correct') sfx.good(goodStreak())
+      else { badStreak(); sfx.bad() }
       setTimeout(sfx.swipe, 160)
       setTimeout(() => next(list), 450)
       return
@@ -76,12 +122,10 @@ export function Runner({ questions, mode, onDone, onExit, allowDontKnow = false 
     }
     setAnswered({ value, ok: result === 'correct', result })
     if (result === 'correct') {
-      const s = streak + 1
-      setStreak(s)
-      sfx.good(s)
+      sfx.good(goodStreak())
       celebrate(el)
     } else if (result === 'wrong') {
-      setStreak(0)
+      badStreak()
       sfx.bad()
       setTimeout(() => sayItem(q.item, q.type === 'build' ? 's' : 'w'), 520) // 틀리면 정답 발음
     } else {
@@ -104,13 +148,31 @@ export function Runner({ questions, mode, onDone, onExit, allowDontKnow = false 
       <div className="flex items-center gap-2.5">
         <button type="button" aria-label="그만하기" className="grid size-9 place-items-center text-[20px] text-ink2"
           onClick={() => (answers.length === 0 ? onExit() : setQuitAsk(true))}>✕</button>
+        {junior && <span key={PLANT[Math.min(4, Math.floor((done / questions.length) * 5))]} className="anim-bump text-[26px] leading-none" aria-hidden="true">{PLANT[Math.min(4, Math.floor((done / questions.length) * 5))]}</span>}
         <div className="h-3 flex-1 overflow-hidden rounded-full bg-[#E4ECDD]">
           <div className="h-full rounded-full bg-[linear-gradient(90deg,#7DB36B,var(--color-leaf))] transition-[width] duration-300" style={{ width: `${(done / questions.length) * 100}%` }} />
         </div>
-        {reveal && streak >= 2 && <span key={streak} className="anim-bump whitespace-nowrap text-[13px] font-bold text-bad">🔥 연속 {streak}</span>}
+        {junior ? (
+          <span className="flex gap-1" title="연속 정답 물방울" aria-label={`연속 정답 ${streak}`}>
+            {[0, 1, 2, 3, 4].map((k) => (
+              <i key={k} className={`block size-3 -rotate-45 rounded-[50%_0_50%_50%] transition-colors ${k < (streak === 0 ? 0 : streak % 5 || 5) ? 'bg-drop' : 'bg-[#DCE8F3]'}`} />
+            ))}
+          </span>
+        ) : (
+          reveal && streak >= 2 && <span key={streak} className="anim-bump whitespace-nowrap text-[13px] font-bold text-bad">🔥 연속 {streak}</span>
+        )}
       </div>
 
-      {View ? <View key={q.key} q={q} answered={answered} reveal={reveal} onAnswer={onAnswer} /> : <p>이 유형은 준비 중이에요.</p>}
+      {View ? <View key={q.key} q={q} answered={answered} reveal={reveal} onAnswer={onAnswer} onMany={onMany} /> : <p>이 유형은 준비 중이에요.</p>}
+
+      {junior && reveal && (
+        <div className="mt-auto flex items-end gap-2">
+          <span key={`${say.mood}-${say.text}`} className={say.mood === 'happy' ? 'buddy-hop' : say.mood === 'sad' ? 'buddy-droop' : ''}>
+            <Buddy size={54} />
+          </span>
+          <p className="m-0 mb-5 rounded-[16px_16px_16px_4px] bg-sheet px-3 py-2 font-display text-[16px] leading-snug shadow-[0_2px_0_var(--color-line)]">{say.text}</p>
+        </div>
+      )}
 
       {allowDontKnow && !answered && (
         <button type="button" onClick={dontKnow} className="self-center rounded-full border border-line bg-sheet px-5 py-2 text-[15px] text-ink2">
@@ -119,7 +181,7 @@ export function Runner({ questions, mode, onDone, onExit, allowDontKnow = false 
       )}
 
       {/* 결과 안내 (아래에서 올라옴) */}
-      {answered && reveal && q.type !== 'card' && (
+      {answered && reveal && q.type !== 'card' && q.type !== 'match' && (
         <div className={`anim-sheet fixed inset-x-0 bottom-0 z-40 border-t-[3px] ${answered.ok ? 'border-good bg-good-bg' : answered.result === 'skipped' ? 'border-line bg-sheet' : 'border-bad bg-bad-bg'}`}>
           <div className="mx-auto grid max-w-[440px] gap-2 px-[18px] pb-[max(20px,env(safe-area-inset-bottom))] pt-4">
             <div className="flex items-center justify-between">
@@ -163,7 +225,13 @@ export function Runner({ questions, mode, onDone, onExit, allowDontKnow = false 
       )}
 
       {fx.map((f) =>
-        f.kind === 'leaf' ? (
+        f.kind === 'rain' ? (
+          <div key={f.id} className="pointer-events-none fixed inset-0 z-[55] overflow-hidden" aria-hidden="true">
+            {Array.from({ length: 46 }, (_, k) => (
+              <i key={k} className="rain-drop" style={{ left: `${(k * 37) % 100}%`, animationDuration: `${0.6 + ((k * 13) % 50) / 100}s`, animationDelay: `${((k * 7) % 60) / 100}s` }} />
+            ))}
+          </div>
+        ) : f.kind === 'leaf' ? (
           <span key={f.id} className="fx-leaf" style={{ left: f.x, top: f.y, ['--dx' as string]: `${f.dx}px`, ['--dy' as string]: `${f.dy}px`, ['--rot' as string]: `${f.rot}deg` }}>{f.ch}</span>
         ) : (
           <span key={f.id} className="fx-xp" style={{ left: f.x, top: f.y }}>+10 XP</span>

@@ -106,7 +106,9 @@ export default function Home() {
             <p className="m-0 font-display text-[20px]">레슨 3개를 모두 통과했어요! 🎉</p>
             <p className="mb-3 mt-1 text-[14px] text-ink2">레벨 시험(15문제)에서 80점이 넘으면 다음 레벨이 열려요.</p>
             {data.progress.completed_at ? (
-              <p className="m-0 font-display text-[17px] text-good">🎓 이 코스를 모두 마쳤어요</p>
+              <Link to={`/certificate/${course}`} className="block w-full rounded-btn bg-leaf px-4 py-3.5 text-center font-display text-lg text-white no-underline shadow-btn">
+                🎓 코스 완료 · 수료증 받기
+              </Link>
             ) : (
               <Link to={`/exam/${level?.id}`} className="block w-full rounded-btn bg-leaf px-4 py-3.5 text-center font-display text-lg text-white no-underline shadow-btn">
                 레벨 시험 보기
